@@ -1,0 +1,42 @@
+---
+- name: Installing packages in Ubuntu and CentOS using package manager module
+  hosts: all
+  become: true
+  gather_facts: true
+  vars:
+    app: tree
+  tasks:
+    - name: Install apache2 and tree for Ubuntu server
+      ansible.builtin.apt:
+        name:
+          - apache2
+          - "{{ app }}"
+        state: present
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+      notify: Start and enable services
+
+    - name: Install httpd and tree for CentOS
+      ansible.builtin.dnf:
+        name:
+          - httpd
+          - "{{ app }}"
+        state: present
+        update_cache: yes
+      when: ansible_distribution == "CentOS"
+      notify: Start and enable services
+
+ # Added task to ensure directory exists
+    - name: Ensure /var/www/html directory exists
+      ansible.builtin.file:
+        path: /var/www/html
+        state: directory
+        mode: '0755'
+
+  handlers:
+    - name: Start and enable services
+      ansible.builtin.service:
+        name: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
+        state: started
+        enabled: true
+

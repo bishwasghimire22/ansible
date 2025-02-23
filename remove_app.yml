@@ -1,0 +1,27 @@
+---
+- name: Installing packages in Ubuntu and CentOS using package manager module
+  hosts: all
+  become: true
+  gather_facts: true
+  vars:
+    app: tree
+  tasks:
+    - name: Install apache2 and tree for Ubuntu server
+      ansible.builtin.apt:
+        name:
+          - apache2
+          - apache2-bin
+          - "{{ app }}"
+        state: absent
+        update_cache: yes  # Added to update package cache
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Install httpd and tree for CentOS
+      ansible.builtin.dnf:
+        name:
+          - httpd
+          - "{{ app }}"
+        state: absent
+        update_cache: yes  # Added to update package cache
+      when: ansible_distribution == "CentOS"
+
